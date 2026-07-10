@@ -2,15 +2,15 @@
  * Declarative binding — one call to `bind()` wires up every element
  * carrying a `data-sound-*` attribute:
  *
- *   data-sound-hover    → plays on pointerenter (mouse-only, debounced)
+ *   data-sound-hover    → plays on pointerenter (fine mouse, repeat-guarded)
  *   data-sound-press    → plays on pointerdown  (mouse-only)
  *   data-sound-release  → plays on pointerup    (mouse-only)
  *   data-sound-toggle   → plays on click
  *
  * The attribute's value picks the sound; an empty or unrecognized value
  * falls back to that attribute's default ("chime", "press", "release",
- * "toggle" respectively). Mouse-only guards skip touch, so sounds read
- * as a physical response to the actual gesture.
+ * "toggle" respectively). Hover, press, and release require a fine mouse;
+ * toggle follows native click activation, including keyboard and touch.
  *
  * Idempotent — safe to call repeatedly (e.g. after view transitions or
  * client-side navigation swap in new DOM).

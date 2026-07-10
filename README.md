@@ -1,13 +1,13 @@
-# tactile
+# Cuelume
 
-Tactile feedback for web interfaces. Ten synthesized UI sounds, zero dependencies, ~2kb.
+Ten carefully designed interaction sounds for the web. Synthesized live with Web Audio, with no audio files and zero runtime dependencies.
 
-tactile is not an audio library — it's a feel library. It gives buttons, links, and toggles the small, satisfying sounds they deserve, with sensible UX behavior built in. No audio files, no configuration: add an attribute, call `bind()`, done.
+Cuelume is a curated sound palette, not an audio engine. It gives buttons, links, toggles, and completed actions clear feedback without asking developers to design sounds themselves. Add an attribute, call `bind()`, done.
 
 ## Install
 
 ```sh
-npm install tactile
+npm install cuelume
 ```
 
 ## Quick start
@@ -23,7 +23,7 @@ Add data attributes to your markup:
 Then wire everything up once:
 
 ```ts
-import { bind } from "tactile";
+import { bind } from "cuelume";
 
 bind();
 ```
@@ -40,7 +40,7 @@ Leave the attribute value empty to use the default, or set it to any sound name.
 Prefer code? Play sounds imperatively:
 
 ```ts
-import { play } from "tactile";
+import { play } from "cuelume";
 
 await navigator.clipboard.writeText(text);
 play("success");
@@ -64,7 +64,7 @@ play("success");
 ## API
 
 ```ts
-import { play, bind, sounds, type SoundName } from "tactile";
+import { play, bind, sounds, type SoundName } from "cuelume";
 ```
 
 - **`play(name?: SoundName)`** — play a sound immediately. Defaults to `"chime"`.
@@ -74,17 +74,17 @@ import { play, bind, sounds, type SoundName } from "tactile";
 
 ## Defaults that behave
 
-- **Mouse-only.** Skips touch input (checks `pointerType` and the `hover`/`pointer` media queries), so phones don't chirp on every tap.
-- **Hover debounce.** 150ms, so sweeping the cursor across a menu doesn't fire a burst of sounds.
+- **Pointer-aware.** Hover, press, and release require a fine mouse pointer. Toggle follows native click activation, including keyboard and touch.
+- **Hover repeat guard.** The same hover target won't replay within 150ms.
 - **One lazy `AudioContext`.** Shared across all sounds, created on first use.
 - **Autoplay-friendly.** Respects the browser's autoplay policy and resumes on the first user gesture.
 - **SSR-safe.** Importing on the server is a no-op.
-- **Degrades silently.** Where Web Audio isn't available, nothing happens — no errors.
+- **Safe fallback.** Where Web Audio isn't available, `play()` is a no-op.
 - **Idempotent binding.** `bind()` never double-attaches listeners.
 
 ## Frameworks
 
-tactile works anywhere HTML does — plain pages, Astro, React, Vue. Just call `bind()` once the DOM is ready, and again after client-side navigation or DOM swaps.
+Cuelume works anywhere HTML does — plain pages, Astro, React, Vue. Call `bind()` once the DOM is ready, and again after client-side navigation or DOM swaps.
 
 React:
 
@@ -97,7 +97,7 @@ useEffect(() => {
 Astro (with view transitions):
 
 ```js
-import { bind } from "tactile";
+import { bind } from "cuelume";
 
 bind();
 document.addEventListener("astro:after-swap", bind);

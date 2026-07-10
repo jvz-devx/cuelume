@@ -1,14 +1,14 @@
 {
-  "name": "tactile",
+  "name": "cuelume",
   "version": "0.1.0",
-  "description": "Tiny synthesized tactile UI sounds via the Web Audio API — no audio files, zero dependencies.",
+  "description": "Curated interaction sounds for the web — synthesized live with zero runtime dependencies.",
   "keywords": [
     "web-audio",
     "sound",
     "ui-sounds",
     "sound-effects",
-    "haptics",
-    "tactile",
+    "interaction-feedback",
+    "interface-sounds",
     "hover",
     "click",
     "synthesis"

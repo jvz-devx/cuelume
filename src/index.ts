@@ -1,13 +1,13 @@
 /**
- * tactile — tiny synthesized tactile UI sounds via the Web Audio API.
+ * Cuelume — curated interaction sounds synthesized via the Web Audio API.
  * No audio files, no dependencies, one shared `AudioContext`.
  *
  * Declarative:
- *   import { bind } from "tactile";
+ *   import { bind } from "cuelume";
  *   bind(); // wires up all data-sound-* attributes
  *
  * Imperative:
- *   import { play } from "tactile";
+ *   import { play } from "cuelume";
  *   play("droplet");
  */
 
