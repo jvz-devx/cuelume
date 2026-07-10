@@ -92,6 +92,7 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
     connect(destination) {
       return destination;
     }
+    disconnect() {}
   }
 
   const parameter = () => ({
@@ -180,6 +181,7 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
   setGlobal("Node", FakeElement);
   setGlobal("document", {});
   setGlobal("performance", { now: () => now });
+  setGlobal("setTimeout", () => 0);
   setGlobal("window", {
     AudioContext: WorkingContext,
     matchMedia: () => ({ matches: true }),
@@ -225,4 +227,71 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
   root.emit("pointerenter", child, { relatedTarget: later });
   assert.equal(counts.buffers, 3);
 
+});
+
+test("finished shimmer graphs disconnect after their audible tail", async (context) => {
+  context.after(restoreGlobals);
+  const timers = [];
+  const disconnected = [];
+
+  class AudioNodeStub {
+    constructor(name) {
+      this.name = name;
+    }
+    connect(destination) {
+      return destination;
+    }
+    disconnect() {
+      disconnected.push(this.name);
+    }
+  }
+
+  const parameter = () => ({
+    value: 0,
+    setValueAtTime() {},
+    exponentialRampToValueAtTime() {},
+  });
+
+  let gainCount = 0;
+  class CleanupContext {
+    state = "running";
+    currentTime = 0;
+    sampleRate = 1;
+    destination = new AudioNodeStub("destination");
+    createGain() {
+      const names = ["master", "feedback-gain", "wet-gain", "tone-gain", "tone-gain"];
+      return Object.assign(new AudioNodeStub(names[gainCount++] ?? "gain"), { gain: parameter() });
+    }
+    createDelay() {
+      return Object.assign(new AudioNodeStub("delay"), { delayTime: parameter() });
+    }
+    createBiquadFilter() {
+      return Object.assign(new AudioNodeStub("feedback-filter"), { frequency: parameter(), Q: parameter() });
+    }
+    createOscillator() {
+      return Object.assign(new AudioNodeStub("oscillator"), {
+        frequency: parameter(),
+        detune: parameter(),
+        start() {},
+        stop() {},
+      });
+    }
+  }
+
+  setGlobal("setTimeout", (callback, delay) => {
+    timers.push({ callback, delay });
+    return 0;
+  });
+  setGlobal("window", { AudioContext: CleanupContext });
+
+  const { play } = await import(`../dist/audio/engine.js?cleanup=${Date.now()}`);
+  play("chime");
+
+  assert.equal(timers.length, 1);
+  assert.equal(Math.round(timers[0].delay), 1176);
+  timers[0].callback();
+  assert.deepEqual(disconnected, ["master", "delay", "feedback-filter", "feedback-gain", "wet-gain"]);
+
+  play("chime");
+  assert.equal(timers.length, 2);
 });

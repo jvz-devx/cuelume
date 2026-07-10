@@ -7,6 +7,10 @@
 
 import { RECIPES, isSoundName, type NoiseLayer, type Shimmer, type SoundName, type SoundRecipe, type ToneLayer } from "../sounds/recipes.js";
 
+const SOURCE_STOP_PADDING = 0.05;
+const CLEANUP_MARGIN = 0.05;
+const INAUDIBLE_GAIN = 0.001;
+
 function renderTone(context: AudioContext, destination: AudioNode, layer: ToneLayer, startTime: number): void {
   const oscillator = context.createOscillator();
   oscillator.type = layer.waveform;
@@ -25,11 +29,11 @@ function renderTone(context: AudioContext, destination: AudioNode, layer: ToneLa
 
   oscillator.connect(gain).connect(destination);
   oscillator.start(startTime);
-  oscillator.stop(startTime + layer.attack + layer.decay + 0.05);
+  oscillator.stop(startTime + layer.attack + layer.decay + SOURCE_STOP_PADDING);
 }
 
 function renderNoise(context: AudioContext, destination: AudioNode, layer: NoiseLayer, startTime: number): void {
-  const duration = layer.attack + layer.decay + 0.05;
+  const duration = layer.attack + layer.decay + SOURCE_STOP_PADDING;
   const length = Math.max(1, Math.floor(duration * context.sampleRate));
   const buffer = context.createBuffer(1, length, context.sampleRate);
   const data = buffer.getChannelData(0);
@@ -54,7 +58,7 @@ function renderNoise(context: AudioContext, destination: AudioNode, layer: Noise
 }
 
 /** Wires a soft echo/shimmer send off `source`, feeding back into `destination`. */
-function attachShimmer(context: AudioContext, source: AudioNode, destination: AudioNode, shimmer: Shimmer): void {
+function attachShimmer(context: AudioContext, source: AudioNode, destination: AudioNode, shimmer: Shimmer): AudioNode[] {
   const delay = context.createDelay(1);
   delay.delayTime.value = shimmer.delay;
 
@@ -74,6 +78,19 @@ function attachShimmer(context: AudioContext, source: AudioNode, destination: Au
   feedbackGain.connect(delay);
   feedbackFilter.connect(wetGain);
   wetGain.connect(destination);
+
+  return [delay, feedbackFilter, feedbackGain, wetGain];
+}
+
+function sourceEnd(recipe: SoundRecipe): number {
+  return Math.max(...recipe.layers.map((layer) => (layer.offset ?? 0) + layer.attack + layer.decay + SOURCE_STOP_PADDING));
+}
+
+function shimmerTail(shimmer?: Shimmer): number {
+  if (!shimmer || shimmer.feedback <= 0) return 0;
+  if (shimmer.feedback >= 1) return shimmer.delay;
+
+  return shimmer.delay * (1 + Math.ceil(Math.log(INAUDIBLE_GAIN) / Math.log(shimmer.feedback)));
 }
 
 function renderRecipe(context: AudioContext, recipe: SoundRecipe): void {
@@ -82,15 +99,19 @@ function renderRecipe(context: AudioContext, recipe: SoundRecipe): void {
   master.gain.value = recipe.masterGain;
   master.connect(context.destination);
 
-  if (recipe.shimmer) {
-    attachShimmer(context, master, context.destination, recipe.shimmer);
-  }
+  const shimmerNodes = recipe.shimmer ? attachShimmer(context, master, context.destination, recipe.shimmer) : [];
 
   for (const layer of recipe.layers) {
     const startTime = now + (layer.offset ?? 0);
     if (layer.kind === "tone") renderTone(context, master, layer, startTime);
     else renderNoise(context, master, layer, startTime);
   }
+
+  const cleanupAfterMs = (sourceEnd(recipe) + shimmerTail(recipe.shimmer) + CLEANUP_MARGIN) * 1000;
+  setTimeout(() => {
+    master.disconnect();
+    for (const node of shimmerNodes) node.disconnect();
+  }, cleanupAfterMs);
 }
 
 let sharedContext: AudioContext | null = null;
