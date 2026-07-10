@@ -1,0 +1,198 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+const originals = new Map();
+
+function setGlobal(name, value) {
+  if (!originals.has(name)) originals.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
+  Object.defineProperty(globalThis, name, { configurable: true, writable: true, value });
+}
+
+function restoreGlobals() {
+  for (const [name, descriptor] of originals) {
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+    else delete globalThis[name];
+  }
+  originals.clear();
+}
+
+test("invalid names and AudioContext failures are silent", async (context) => {
+  context.after(restoreGlobals);
+  let constructions = 0;
+
+  class ThrowingContext {
+    constructor() {
+      constructions++;
+      throw new Error("blocked");
+    }
+  }
+
+  setGlobal("window", { AudioContext: ThrowingContext });
+  const { play } = await import(`../dist/audio/engine.js?failures=${Date.now()}`);
+
+  assert.doesNotThrow(() => play("toString"));
+  assert.equal(constructions, 0);
+  assert.doesNotThrow(() => play("chime"));
+  assert.equal(constructions, 1);
+
+  let renders = 0;
+  class RejectedContext {
+    state = "suspended";
+    resume() {
+      return Promise.reject(new Error("blocked"));
+    }
+    createGain() {
+      renders++;
+    }
+  }
+
+  setGlobal("window", { AudioContext: RejectedContext });
+  const rejected = await import(`../dist/audio/engine.js?rejected=${Date.now()}`);
+  assert.doesNotThrow(() => rejected.play("chime"));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(renders, 0);
+
+});
+
+test("binding is delegated, dynamic, idempotent, and globally throttled", async (context) => {
+  context.after(restoreGlobals);
+  const counts = { buffers: 0, oscillators: 0 };
+
+  class AudioNodeStub {
+    connect(destination) {
+      return destination;
+    }
+  }
+
+  const parameter = () => ({
+    value: 0,
+    setValueAtTime() {},
+    exponentialRampToValueAtTime() {},
+  });
+
+  class WorkingContext {
+    state = "running";
+    currentTime = 0;
+    sampleRate = 1;
+    destination = new AudioNodeStub();
+    createGain() {
+      return Object.assign(new AudioNodeStub(), { gain: parameter() });
+    }
+    createOscillator() {
+      return Object.assign(new AudioNodeStub(), {
+        frequency: parameter(),
+        detune: parameter(),
+        start() {
+          counts.oscillators++;
+        },
+        stop() {},
+      });
+    }
+    createBuffer() {
+      counts.buffers++;
+      return { getChannelData: () => new Float32Array(1) };
+    }
+    createBufferSource() {
+      return Object.assign(new AudioNodeStub(), { buffer: null, start() {}, stop() {} });
+    }
+    createBiquadFilter() {
+      return Object.assign(new AudioNodeStub(), { frequency: parameter(), Q: parameter() });
+    }
+    createDelay() {
+      return Object.assign(new AudioNodeStub(), { delayTime: parameter() });
+    }
+  }
+
+  class FakeElement {
+    constructor(parent = null) {
+      this.parent = parent;
+      this.attributes = new Map();
+      this.listeners = new Map();
+    }
+    addEventListener(type, listener) {
+      const listeners = this.listeners.get(type) ?? [];
+      listeners.push(listener);
+      this.listeners.set(type, listeners);
+    }
+    emit(type, target = this, options = {}) {
+      const event = { target, relatedTarget: null, pointerType: "mouse", ...options };
+      for (const listener of this.listeners.get(type) ?? []) listener(event);
+    }
+    setAttribute(name, value = "") {
+      this.attributes.set(name, value);
+    }
+    removeAttribute(name) {
+      this.attributes.delete(name);
+    }
+    getAttribute(name) {
+      return this.attributes.get(name) ?? null;
+    }
+    hasAttribute(name) {
+      return this.attributes.has(name);
+    }
+    closest(selector) {
+      const attribute = selector.slice(1, -1);
+      for (let element = this; element; element = element.parent) {
+        if (element.hasAttribute(attribute)) return element;
+      }
+      return null;
+    }
+    contains(candidate) {
+      for (let element = candidate; element; element = element.parent) {
+        if (element === this) return true;
+      }
+      return false;
+    }
+  }
+
+  let now = 1_000;
+  setGlobal("Element", FakeElement);
+  setGlobal("Node", FakeElement);
+  setGlobal("document", {});
+  setGlobal("performance", { now: () => now });
+  setGlobal("window", {
+    AudioContext: WorkingContext,
+    matchMedia: () => ({ matches: true }),
+  });
+
+  const root = new FakeElement();
+  const { bind } = await import(`../dist/interactions/bind.js?binding=${Date.now()}`);
+  bind(root);
+  bind(root);
+  assert.equal(root.listeners.get("pointerenter").length, 1);
+  assert.equal(root.listeners.get("click").length, 1);
+
+  const first = new FakeElement(root);
+  first.setAttribute("data-sound-hover", "whisper");
+  root.emit("pointerenter", first);
+  assert.equal(counts.buffers, 1);
+
+  const later = new FakeElement(root);
+  later.setAttribute("data-sound-hover", "whisper");
+  now += 100;
+  root.emit("pointerenter", later);
+  assert.equal(counts.buffers, 1);
+
+  now += 51;
+  root.emit("pointerenter", later);
+  assert.equal(counts.buffers, 2);
+
+  later.setAttribute("data-sound-toggle", "whisper");
+  root.emit("click", later, { pointerType: undefined });
+  assert.equal(counts.buffers, 3);
+  later.removeAttribute("data-sound-toggle");
+  root.emit("click", later, { pointerType: undefined });
+  assert.equal(counts.buffers, 3);
+
+  const invalid = new FakeElement(root);
+  invalid.setAttribute("data-sound-hover", "toString");
+  now += 151;
+  root.emit("pointerenter", invalid);
+  assert.equal(counts.oscillators, 2);
+
+  const child = new FakeElement(later);
+  now += 151;
+  root.emit("pointerenter", child, { relatedTarget: later });
+  assert.equal(counts.buffers, 3);
+
+});

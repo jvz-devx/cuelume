@@ -2,82 +2,81 @@
  * Declarative binding — one call to `bind()` wires up every element
  * carrying a `data-sound-*` attribute:
  *
- *   data-sound-hover    → plays on pointerenter (fine mouse, repeat-guarded)
+ *   data-sound-hover    → plays on pointerenter (fine mouse, throttled)
  *   data-sound-press    → plays on pointerdown  (mouse-only)
  *   data-sound-release  → plays on pointerup    (mouse-only)
  *   data-sound-toggle   → plays on click
  *
- * The attribute's value picks the sound; an empty or unrecognized value
- * falls back to that attribute's default ("chime", "press", "release",
- * "toggle" respectively). Hover, press, and release require a fine mouse;
- * toggle follows native click activation, including keyboard and touch.
- *
- * Idempotent — safe to call repeatedly (e.g. after view transitions or
- * client-side navigation swap in new DOM).
+ * Delegated listeners resolve attributes when each event fires, so later
+ * DOM additions, removals, and clones work without rescanning.
  */
 
 import { play } from "../audio/engine.js";
-import { RECIPES, type SoundName } from "../sounds/recipes.js";
+import { isSoundName, type SoundName } from "../sounds/recipes.js";
 
-const BOUND_ATTR = "data-sound-bound";
-const RETRIGGER_GAP_MS = 150;
+const HOVER_GAP_MS = 150;
+const boundRoots = new WeakSet<ParentNode>();
+const handledEvents = new WeakSet<Event>();
 
-let lastTarget: EventTarget | null = null;
-let lastTriggerTime = 0;
+let lastHoverTime = -Infinity;
 
 function resolve(el: HTMLElement, attr: string, fallback: SoundName): SoundName {
-  const requested = el.getAttribute(attr) || fallback;
-  return (requested in RECIPES ? requested : fallback) as SoundName;
+  const requested = el.getAttribute(attr);
+  return isSoundName(requested) ? requested : fallback;
 }
 
 function isMouse(event: PointerEvent): boolean {
   return event.pointerType === "mouse" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 }
 
+function findTarget(root: ParentNode, event: Event, attr: string): HTMLElement | null {
+  if (!(event.target instanceof Element)) return null;
+  const element = event.target.closest<HTMLElement>(`[${attr}]`);
+  return element && (root as Node).contains(element) ? element : null;
+}
+
+function listen(
+  root: ParentNode,
+  eventName: "pointerenter" | "pointerdown" | "pointerup" | "click",
+  attr: string,
+  fallback: SoundName,
+  mouseOnly = false,
+): void {
+  (root as EventTarget).addEventListener(
+    eventName,
+    (event) => {
+      const element = findTarget(root, event, attr);
+      if (!element || handledEvents.has(event)) return;
+      if (mouseOnly && !isMouse(event as PointerEvent)) return;
+
+      if (eventName === "pointerenter") {
+        const relatedTarget = (event as PointerEvent).relatedTarget;
+        if (relatedTarget instanceof Node && element.contains(relatedTarget)) return;
+
+        const now = performance.now();
+        if (now - lastHoverTime < HOVER_GAP_MS) return;
+        lastHoverTime = now;
+      }
+
+      handledEvents.add(event);
+      play(resolve(element, attr, fallback));
+    },
+    true,
+  );
+}
+
 /**
- * Binds all `data-sound-*` attributes under `root` (default: the whole
- * document). Safe no-op during SSR. Idempotent — already-bound elements
- * are marked with `data-sound-bound` and skipped on later calls.
+ * Delegates `data-sound-*` interactions under `root` (default: the whole
+ * document). Safe during SSR and safe to call repeatedly for the same root.
  */
 export function bind(root?: ParentNode): void {
   if (typeof document === "undefined") return;
   const scope = root ?? document;
+  if (boundRoots.has(scope)) return;
+  boundRoots.add(scope);
 
-  scope
-    .querySelectorAll<HTMLElement>("[data-sound-hover], [data-sound-press], [data-sound-release], [data-sound-toggle]")
-    .forEach((el) => {
-      if (el.getAttribute(BOUND_ATTR) === "true") return;
-      el.setAttribute(BOUND_ATTR, "true");
-
-      if (el.hasAttribute("data-sound-hover")) {
-        el.addEventListener("pointerenter", (event) => {
-          if (!isMouse(event)) return;
-
-          const now = performance.now();
-          if (event.currentTarget === lastTarget && now - lastTriggerTime < RETRIGGER_GAP_MS) {
-            return;
-          }
-          lastTarget = event.currentTarget;
-          lastTriggerTime = now;
-
-          play(resolve(el, "data-sound-hover", "chime"));
-        });
-      }
-
-      if (el.hasAttribute("data-sound-press")) {
-        el.addEventListener("pointerdown", (event) => {
-          if (isMouse(event)) play(resolve(el, "data-sound-press", "press"));
-        });
-      }
-
-      if (el.hasAttribute("data-sound-release")) {
-        el.addEventListener("pointerup", (event) => {
-          if (isMouse(event)) play(resolve(el, "data-sound-release", "release"));
-        });
-      }
-
-      if (el.hasAttribute("data-sound-toggle")) {
-        el.addEventListener("click", () => play(resolve(el, "data-sound-toggle", "toggle")));
-      }
-    });
+  listen(scope, "pointerenter", "data-sound-hover", "chime", true);
+  listen(scope, "pointerdown", "data-sound-press", "press", true);
+  listen(scope, "pointerup", "data-sound-release", "release", true);
+  listen(scope, "click", "data-sound-toggle", "toggle");
 }

@@ -5,7 +5,7 @@
  * shimmer tail) instead of a hard transient, so nothing feels harsh.
  */
 
-import { RECIPES, type NoiseLayer, type Shimmer, type SoundName, type SoundRecipe, type ToneLayer } from "../sounds/recipes.js";
+import { RECIPES, isSoundName, type NoiseLayer, type Shimmer, type SoundName, type SoundRecipe, type ToneLayer } from "../sounds/recipes.js";
 
 function renderTone(context: AudioContext, destination: AudioNode, layer: ToneLayer, startTime: number): void {
   const oscillator = context.createOscillator();
@@ -100,7 +100,11 @@ function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctor) return null;
-  sharedContext = new Ctor();
+  try {
+    sharedContext = new Ctor();
+  } catch {
+    return null;
+  }
   return sharedContext;
 }
 
@@ -111,6 +115,8 @@ function getAudioContext(): AudioContext | null {
  * when Web Audio is unavailable (SSR, old browsers).
  */
 export function play(sound: SoundName = "chime"): void {
+  if (!isSoundName(sound)) return;
+
   const context = getAudioContext();
   if (!context) return;
 
@@ -118,6 +124,15 @@ export function play(sound: SoundName = "chime"): void {
   if (context.state === "running") {
     renderRecipe(context, recipe);
   } else {
-    context.resume().then(() => renderRecipe(context, recipe));
+    try {
+      void context.resume().then(
+        () => {
+          if (context.state === "running") renderRecipe(context, recipe);
+        },
+        () => {},
+      );
+    } catch {
+      // Some browsers throw synchronously when audio is blocked.
+    }
   }
 }

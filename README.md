@@ -68,30 +68,30 @@ import { play, bind, sounds, type SoundName } from "cuelume";
 ```
 
 - **`play(name?: SoundName)`** — play a sound immediately. Defaults to `"chime"`.
-- **`bind(root?: ParentNode)`** — wire all `data-sound-*` attributes under `root` (defaults to the whole document). Idempotent — safe to call repeatedly, e.g. after DOM swaps.
+- **`bind(root?: ParentNode)`** — delegate all `data-sound-*` interactions under `root` (defaults to the whole document). Idempotent and handles elements added later.
 - **`sounds`** — the list of all sound names.
 - **`SoundName`** — union type of the ten sound names.
 
 ## Defaults that behave
 
 - **Pointer-aware.** Hover, press, and release require a fine mouse pointer. Toggle follows native click activation, including keyboard and touch.
-- **Hover repeat guard.** The same hover target won't replay within 150ms.
+- **Hover repeat guard.** Hover sounds are globally throttled to one every 150ms, so sweeping across a menu stays quiet.
 - **One lazy `AudioContext`.** Shared across all sounds, created on first use.
-- **Autoplay-friendly.** Respects the browser's autoplay policy and resumes on the first user gesture.
+- **Autoplay-friendly.** Attempts to resume suspended audio without surfacing errors when a browser blocks it.
 - **SSR-safe.** Importing on the server is a no-op.
-- **Safe fallback.** Where Web Audio isn't available, `play()` is a no-op.
-- **Idempotent binding.** `bind()` never double-attaches listeners.
+- **Safe fallback.** Invalid runtime names and unavailable or blocked Web Audio make `play()` a silent no-op.
+- **Dynamic, idempotent binding.** `bind()` never double-attaches listeners, and later DOM additions, removals, and clones work automatically.
 
 ## Frameworks
 
-Cuelume works anywhere HTML does — plain pages, Astro, React, Vue. Call `bind()` once the DOM is ready, and again after client-side navigation or DOM swaps.
+Cuelume works anywhere HTML does — plain pages, Astro, React, Vue. Call `bind()` once after the DOM is ready. Delegated listeners keep working when components or routes replace descendants.
 
 React:
 
 ```tsx
 useEffect(() => {
   bind();
-});
+}, []);
 ```
 
 Astro (with view transitions):
@@ -100,7 +100,6 @@ Astro (with view transitions):
 import { bind } from "cuelume";
 
 bind();
-document.addEventListener("astro:after-swap", bind);
 ```
 
 ## License
