@@ -94,6 +94,12 @@ function renderRecipe(context: AudioContext, recipe: SoundRecipe): void {
 }
 
 let sharedContext: AudioContext | null = null;
+let enabled = true;
+
+/** Enables or disables future playback. Preference storage stays with the app. */
+export function setEnabled(value: boolean): void {
+  if (typeof value === "boolean") enabled = value;
+}
 
 function getAudioContext(): AudioContext | null {
   if (sharedContext) return sharedContext;
@@ -115,7 +121,7 @@ function getAudioContext(): AudioContext | null {
  * when Web Audio is unavailable (SSR, old browsers).
  */
 export function play(sound: SoundName = "chime"): void {
-  if (!isSoundName(sound)) return;
+  if (!enabled || !isSoundName(sound)) return;
 
   const context = getAudioContext();
   if (!context) return;
@@ -127,7 +133,7 @@ export function play(sound: SoundName = "chime"): void {
     try {
       void context.resume().then(
         () => {
-          if (context.state === "running") renderRecipe(context, recipe);
+          if (enabled && context.state === "running") renderRecipe(context, recipe);
         },
         () => {},
       );

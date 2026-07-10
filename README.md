@@ -10,14 +10,20 @@ Cuelume is a curated sound palette, not an audio engine. It gives buttons, links
 npm install cuelume
 ```
 
+## Requirements
+
+Cuelume is ESM-only. Use it through native `import` or an ESM-compatible bundler; CommonJS `require()` is not supported.
+
+It targets modern browsers with ES modules and the Web Audio API. Server-side imports are safe, but sound playback only runs in the browser.
+
 ## Quick start
 
 Add data attributes to your markup:
 
 ```html
-<button data-sound-press data-sound-release>Save</button>
-<a data-sound-hover="tick">Docs</a>
-<button data-sound-toggle>Dark mode</button>
+<button data-cuelume-press data-cuelume-release>Save</button>
+<a data-cuelume-hover="tick">Docs</a>
+<button data-cuelume-toggle>Dark mode</button>
 ```
 
 Then wire everything up once:
@@ -28,12 +34,12 @@ import { bind } from "cuelume";
 bind();
 ```
 
-| Attribute            | Fires on       | Default sound |
-| -------------------- | -------------- | ------------- |
-| `data-sound-hover`   | `pointerenter` | `chime`       |
-| `data-sound-press`   | `pointerdown`  | `press`       |
-| `data-sound-release` | `pointerup`    | `release`     |
-| `data-sound-toggle`  | `click`        | `toggle`      |
+| Attribute              | Fires on       | Default sound |
+| ---------------------- | -------------- | ------------- |
+| `data-cuelume-hover`   | `pointerenter` | `chime`       |
+| `data-cuelume-press`   | `pointerdown`  | `press`       |
+| `data-cuelume-release` | `pointerup`    | `release`     |
+| `data-cuelume-toggle`  | `click`        | `toggle`      |
 
 Leave the attribute value empty to use the default, or set it to any sound name.
 
@@ -45,6 +51,17 @@ import { play } from "cuelume";
 await navigator.clipboard.writeText(text);
 play("success");
 ```
+
+Need a sound preference? Your app owns the setting; Cuelume only applies it:
+
+```ts
+import { setEnabled } from "cuelume";
+
+setEnabled(false); // future play attempts become no-ops
+setEnabled(true);  // enable playback again
+```
+
+Cuelume starts enabled and does not read or write storage.
 
 ## Sounds
 
@@ -64,11 +81,12 @@ play("success");
 ## API
 
 ```ts
-import { play, bind, sounds, type SoundName } from "cuelume";
+import { play, bind, setEnabled, sounds, type SoundName } from "cuelume";
 ```
 
 - **`play(name?: SoundName)`** — play a sound immediately. Defaults to `"chime"`.
-- **`bind(root?: ParentNode)`** — delegate all `data-sound-*` interactions under `root` (defaults to the whole document). Idempotent and handles elements added later.
+- **`bind(root?: ParentNode)`** — delegate all `data-cuelume-*` interactions under `root` (defaults to the whole document). Idempotent and handles elements added later.
+- **`setEnabled(enabled: boolean)`** — enable or disable future playback. Does not persist the preference or stop sounds already playing.
 - **`sounds`** — the list of all sound names.
 - **`SoundName`** — union type of the ten sound names.
 

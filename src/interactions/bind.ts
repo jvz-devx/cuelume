@@ -1,11 +1,11 @@
 /**
  * Declarative binding — one call to `bind()` wires up every element
- * carrying a `data-sound-*` attribute:
+ * carrying a `data-cuelume-*` attribute:
  *
- *   data-sound-hover    → plays on pointerenter (fine mouse, throttled)
- *   data-sound-press    → plays on pointerdown  (mouse-only)
- *   data-sound-release  → plays on pointerup    (mouse-only)
- *   data-sound-toggle   → plays on click
+ *   data-cuelume-hover    → plays on pointerenter (fine mouse, throttled)
+ *   data-cuelume-press    → plays on pointerdown  (mouse-only)
+ *   data-cuelume-release  → plays on pointerup    (mouse-only)
+ *   data-cuelume-toggle   → plays on click
  *
  * Delegated listeners resolve attributes when each event fires, so later
  * DOM additions, removals, and clones work without rescanning.
@@ -66,7 +66,7 @@ function listen(
 }
 
 /**
- * Delegates `data-sound-*` interactions under `root` (default: the whole
+ * Delegates `data-cuelume-*` interactions under `root` (default: the whole
  * document). Safe during SSR and safe to call repeatedly for the same root.
  */
 export function bind(root?: ParentNode): void {
@@ -75,8 +75,8 @@ export function bind(root?: ParentNode): void {
   if (boundRoots.has(scope)) return;
   boundRoots.add(scope);
 
-  listen(scope, "pointerenter", "data-sound-hover", "chime", true);
-  listen(scope, "pointerdown", "data-sound-press", "press", true);
-  listen(scope, "pointerup", "data-sound-release", "release", true);
-  listen(scope, "click", "data-sound-toggle", "toggle");
+  listen(scope, "pointerenter", "data-cuelume-hover", "chime", true);
+  listen(scope, "pointerdown", "data-cuelume-press", "press", true);
+  listen(scope, "pointerup", "data-cuelume-release", "release", true);
+  listen(scope, "click", "data-cuelume-toggle", "toggle");
 }

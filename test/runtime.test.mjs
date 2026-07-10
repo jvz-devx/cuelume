@@ -28,10 +28,14 @@ test("invalid names and AudioContext failures are silent", async (context) => {
   }
 
   setGlobal("window", { AudioContext: ThrowingContext });
-  const { play } = await import(`../dist/audio/engine.js?failures=${Date.now()}`);
+  const { play, setEnabled } = await import(`../dist/audio/engine.js?failures=${Date.now()}`);
 
   assert.doesNotThrow(() => play("toString"));
   assert.equal(constructions, 0);
+  setEnabled(false);
+  assert.doesNotThrow(() => play("chime"));
+  assert.equal(constructions, 0);
+  setEnabled(true);
   assert.doesNotThrow(() => play("chime"));
   assert.equal(constructions, 1);
 
@@ -49,6 +53,32 @@ test("invalid names and AudioContext failures are silent", async (context) => {
   setGlobal("window", { AudioContext: RejectedContext });
   const rejected = await import(`../dist/audio/engine.js?rejected=${Date.now()}`);
   assert.doesNotThrow(() => rejected.play("chime"));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(renders, 0);
+
+  let finishResume = () => {};
+  class DeferredContext {
+    state = "suspended";
+    destination = {};
+    resume() {
+      return new Promise((resolve) => {
+        finishResume = () => {
+          this.state = "running";
+          resolve();
+        };
+      });
+    }
+    createGain() {
+      renders++;
+      throw new Error("rendered while disabled");
+    }
+  }
+
+  setGlobal("window", { AudioContext: DeferredContext });
+  const deferred = await import(`../dist/audio/engine.js?deferred=${Date.now()}`);
+  deferred.play("chime");
+  deferred.setEnabled(false);
+  finishResume();
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(renders, 0);
 
@@ -163,12 +193,12 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
   assert.equal(root.listeners.get("click").length, 1);
 
   const first = new FakeElement(root);
-  first.setAttribute("data-sound-hover", "whisper");
+  first.setAttribute("data-cuelume-hover", "whisper");
   root.emit("pointerenter", first);
   assert.equal(counts.buffers, 1);
 
   const later = new FakeElement(root);
-  later.setAttribute("data-sound-hover", "whisper");
+  later.setAttribute("data-cuelume-hover", "whisper");
   now += 100;
   root.emit("pointerenter", later);
   assert.equal(counts.buffers, 1);
@@ -177,15 +207,15 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
   root.emit("pointerenter", later);
   assert.equal(counts.buffers, 2);
 
-  later.setAttribute("data-sound-toggle", "whisper");
+  later.setAttribute("data-cuelume-toggle", "whisper");
   root.emit("click", later, { pointerType: undefined });
   assert.equal(counts.buffers, 3);
-  later.removeAttribute("data-sound-toggle");
+  later.removeAttribute("data-cuelume-toggle");
   root.emit("click", later, { pointerType: undefined });
   assert.equal(counts.buffers, 3);
 
   const invalid = new FakeElement(root);
-  invalid.setAttribute("data-sound-hover", "toString");
+  invalid.setAttribute("data-cuelume-hover", "toString");
   now += 151;
   root.emit("pointerenter", invalid);
   assert.equal(counts.oscillators, 2);
