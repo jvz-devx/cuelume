@@ -16,8 +16,8 @@
  * client-side navigation swap in new DOM).
  */
 
-import { play } from "./engine.js";
-import { RECIPES, type SoundName } from "./sounds.js";
+import { play } from "../audio/engine.js";
+import { RECIPES, type SoundName } from "../sounds/recipes.js";
 
 const BOUND_ATTR = "data-sound-bound";
 const RETRIGGER_GAP_MS = 150;

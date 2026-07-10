@@ -5,7 +5,7 @@
  * shimmer tail) instead of a hard transient, so nothing feels harsh.
  */
 
-import { RECIPES, type NoiseLayer, type Shimmer, type SoundName, type SoundRecipe, type ToneLayer } from "./sounds.js";
+import { RECIPES, type NoiseLayer, type Shimmer, type SoundName, type SoundRecipe, type ToneLayer } from "../sounds/recipes.js";
 
 function renderTone(context: AudioContext, destination: AudioNode, layer: ToneLayer, startTime: number): void {
   const oscillator = context.createOscillator();

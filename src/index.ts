@@ -11,7 +11,7 @@
  *   play("droplet");
  */
 
-export type { SoundName } from "./sounds.js";
-export { sounds } from "./sounds.js";
-export { play } from "./engine.js";
-export { bind } from "./bind.js";
+export type { SoundName } from "./sounds/recipes.js";
+export { sounds } from "./sounds/recipes.js";
+export { play } from "./audio/engine.js";
+export { bind } from "./interactions/bind.js";
