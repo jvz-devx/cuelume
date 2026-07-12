@@ -16,6 +16,15 @@ function restoreGlobals() {
   originals.clear();
 }
 
+test("exports the complete sound palette", async () => {
+  const { sounds } = await import("../dist/index.js");
+  assert.deepEqual(sounds, [
+    "chime", "sparkle", "droplet", "bloom", "whisper", "tick", "press", "release", "toggle", "success",
+    "pop", "whoosh", "notification", "warning", "error",
+    "card", "draw", "deal", "shuffle", "victory",
+  ]);
+});
+
 test("invalid names and AudioContext failures are silent", async (context) => {
   context.after(restoreGlobals);
   let constructions = 0;

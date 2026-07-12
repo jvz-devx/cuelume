@@ -1,5 +1,5 @@
 /**
- * The sound palette — layer/recipe types plus the ten built-in recipes.
+ * The sound palette — layer/recipe types plus the twenty built-in recipes.
  * Each sound has its own distinct shape — a chime, an arpeggio, a pitch
  * glide, a warm pad, a breath — rather than being a volume/EQ tweak on
  * the same click. Add a new one here without touching any audio graph code.
@@ -138,6 +138,93 @@ export const RECIPES = {
       { kind: "tone", waveform: "sine", frequency: 1318.51, offset: 0.12, attack: 0.004, decay: 0.18, peak: 0.07 },
     ],
     shimmer: { delay: 0.1, feedback: 0.22, wet: 0.16, lowpass: 4500 },
+  },
+  /** A tiny elastic blip for selections, chips, and lightweight additions. */
+  pop: {
+    masterGain: 0.45,
+    layers: [
+      { kind: "tone", waveform: "sine", frequency: 520, glideTo: 880, glideTime: 0.045, attack: 0.002, decay: 0.07, peak: 0.08 },
+    ],
+  },
+  /** A short airy sweep for transitions and items moving in or out. */
+  whoosh: {
+    masterGain: 0.35,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 1400, filterQ: 0.8, attack: 0.035, decay: 0.14, peak: 0.09 },
+      { kind: "tone", waveform: "sine", frequency: 280, glideTo: 620, glideTime: 0.16, attack: 0.025, decay: 0.14, peak: 0.025 },
+    ],
+  },
+  /** A clear two-note call that gets attention without implying success. */
+  notification: {
+    masterGain: 0.45,
+    layers: [
+      { kind: "tone", waveform: "sine", frequency: 659.25, attack: 0.004, decay: 0.13, peak: 0.06 },
+      { kind: "tone", waveform: "sine", frequency: 880, offset: 0.1, attack: 0.004, decay: 0.2, peak: 0.065 },
+    ],
+    shimmer: { delay: 0.11, feedback: 0.2, wet: 0.14, lowpass: 4000 },
+  },
+  /** Two restrained descending notes for caution and validation hints. */
+  warning: {
+    masterGain: 0.4,
+    layers: [
+      { kind: "tone", waveform: "triangle", frequency: 440, attack: 0.004, decay: 0.11, peak: 0.06 },
+      { kind: "tone", waveform: "triangle", frequency: 349.23, offset: 0.11, attack: 0.004, decay: 0.16, peak: 0.065 },
+    ],
+  },
+  /** A compact low double pulse for failed or invalid actions. */
+  error: {
+    masterGain: 0.35,
+    layers: [
+      { kind: "tone", waveform: "triangle", frequency: 220, glideTo: 180, glideTime: 0.08, attack: 0.003, decay: 0.09, peak: 0.08 },
+      { kind: "tone", waveform: "triangle", frequency: 196, glideTo: 150, glideTime: 0.1, offset: 0.1, attack: 0.003, decay: 0.13, peak: 0.085 },
+    ],
+  },
+  /** A crisp paper-and-table snap for placing a card. */
+  card: {
+    masterGain: 0.4,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2600, filterQ: 0.8, attack: 0.001, decay: 0.035, peak: 0.13 },
+      { kind: "tone", waveform: "sine", frequency: 180, attack: 0.001, decay: 0.045, peak: 0.035 },
+    ],
+  },
+  /** A light papery slide for taking a card from the deck. */
+  draw: {
+    masterGain: 0.4,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 1100, filterQ: 0.55, attack: 0.015, decay: 0.11, peak: 0.08 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 3400, filterQ: 0.8, offset: 0.035, attack: 0.006, decay: 0.075, peak: 0.065 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2100, filterQ: 0.9, offset: 0.105, attack: 0.001, decay: 0.028, peak: 0.11 },
+      { kind: "tone", waveform: "sine", frequency: 150, offset: 0.105, attack: 0.001, decay: 0.035, peak: 0.025 },
+    ],
+  },
+  /** Two quick card snaps for dealing into a hand. */
+  deal: {
+    masterGain: 0.35,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2300, filterQ: 0.9, attack: 0.001, decay: 0.03, peak: 0.12 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2500, filterQ: 0.9, offset: 0.065, attack: 0.001, decay: 0.035, peak: 0.11 },
+    ],
+  },
+  /** A compact run of papery bursts that suggests a deck being shuffled. */
+  shuffle: {
+    masterGain: 0.3,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 1700, filterQ: 0.65, attack: 0.005, decay: 0.055, peak: 0.1 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2400, filterQ: 0.65, offset: 0.045, attack: 0.005, decay: 0.055, peak: 0.11 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 1900, filterQ: 0.65, offset: 0.09, attack: 0.005, decay: 0.055, peak: 0.1 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2700, filterQ: 0.65, offset: 0.135, attack: 0.005, decay: 0.07, peak: 0.1 },
+    ],
+  },
+  /** A bright compact flourish for winning a round or game. */
+  victory: {
+    masterGain: 0.45,
+    layers: [
+      { kind: "tone", waveform: "triangle", frequency: 523.25, attack: 0.004, decay: 0.11, peak: 0.05 },
+      { kind: "tone", waveform: "triangle", frequency: 659.25, offset: 0.075, attack: 0.004, decay: 0.12, peak: 0.055 },
+      { kind: "tone", waveform: "triangle", frequency: 783.99, offset: 0.15, attack: 0.004, decay: 0.14, peak: 0.06 },
+      { kind: "tone", waveform: "sine", frequency: 1046.5, offset: 0.225, attack: 0.004, decay: 0.24, peak: 0.065 },
+    ],
+    shimmer: { delay: 0.1, feedback: 0.24, wet: 0.18, lowpass: 4800 },
   },
 } as const satisfies Record<string, SoundRecipe>;
 

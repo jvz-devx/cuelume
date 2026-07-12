@@ -1,6 +1,6 @@
 # Cuelume
 
-Ten carefully designed interaction sounds for the web. Synthesized live with Web Audio, with no audio files and zero runtime dependencies.
+Twenty carefully designed interaction sounds for the web. Synthesized live with Web Audio, with no audio files and zero runtime dependencies.
 
 Cuelume is a curated sound palette, not an audio engine. It gives buttons, links, toggles, and completed actions clear feedback without asking developers to design sounds themselves. Add an attribute, call `bind()`, done.
 
@@ -77,6 +77,16 @@ Cuelume starts enabled and does not read or write storage.
 | `release` | Brighter springy tick        | Pointer up                       |
 | `toggle`  | Mechanical click-clack       | Switches, tabs                   |
 | `success` | Warm three-note confirmation | After an action succeeds (e.g. copy to clipboard) |
+| `pop`     | Tiny elastic blip            | Selection, lightweight additions |
+| `whoosh`  | Short airy sweep             | Transitions, moving items        |
+| `notification` | Clear two-note call     | New messages, background updates |
+| `warning` | Restrained descending pair   | Caution, validation hints        |
+| `error`   | Compact low double pulse     | Failed or invalid actions        |
+| `card`    | Crisp paper-and-table snap   | Playing a card                   |
+| `draw`    | Light papery slide           | Drawing from a deck              |
+| `deal`    | Two quick card snaps         | Dealing into a hand              |
+| `shuffle` | Compact papery rustle        | Shuffling a deck                 |
+| `victory` | Bright compact flourish      | Winning a round or game          |
 
 ## API
 
@@ -88,7 +98,7 @@ import { play, bind, setEnabled, sounds, type SoundName } from "cuelume";
 - **`bind(root?: ParentNode)`** — delegate all `data-cuelume-*` interactions under `root` (defaults to the whole document). Idempotent and handles elements added later.
 - **`setEnabled(enabled: boolean)`** — enable or disable future playback. Does not persist the preference or stop sounds already playing.
 - **`sounds`** — the list of all sound names.
-- **`SoundName`** — union type of the ten sound names.
+- **`SoundName`** — union type of the twenty sound names.
 
 ## Defaults that behave
 
