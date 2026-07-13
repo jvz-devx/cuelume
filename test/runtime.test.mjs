@@ -22,6 +22,7 @@ test("exports the complete sound palette", async () => {
     "chime", "sparkle", "droplet", "bloom", "whisper", "tick", "press", "release", "toggle", "success",
     "pop", "whoosh", "notification", "warning", "error",
     "card", "draw", "deal", "shuffle", "victory",
+    "knock",
   ]);
 });
 

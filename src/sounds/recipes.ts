@@ -1,5 +1,5 @@
 /**
- * The sound palette — layer/recipe types plus the twenty built-in recipes.
+ * The sound palette — layer/recipe types plus the twenty-one built-in recipes.
  * Each sound has its own distinct shape — a chime, an arpeggio, a pitch
  * glide, a warm pad, a breath — rather than being a volume/EQ tweak on
  * the same click. Add a new one here without touching any audio graph code.
@@ -225,6 +225,18 @@ export const RECIPES = {
       { kind: "tone", waveform: "sine", frequency: 1046.5, offset: 0.225, attack: 0.004, decay: 0.24, peak: 0.065 },
     ],
     shimmer: { delay: 0.1, feedback: 0.24, wet: 0.18, lowpass: 4800 },
+  },
+  /** Two distinct wooden knocks for calls, challenges, and table actions. */
+  knock: {
+    masterGain: 0.5,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 950, filterQ: 0.7, attack: 0.001, decay: 0.045, peak: 0.18 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2100, filterQ: 0.8, attack: 0.001, decay: 0.025, peak: 0.07 },
+      { kind: "tone", waveform: "triangle", frequency: 200, glideTo: 160, glideTime: 0.04, attack: 0.001, decay: 0.06, peak: 0.06 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 950, filterQ: 0.7, offset: 0.28, attack: 0.001, decay: 0.045, peak: 0.18 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 2100, filterQ: 0.8, offset: 0.28, attack: 0.001, decay: 0.025, peak: 0.07 },
+      { kind: "tone", waveform: "triangle", frequency: 200, glideTo: 160, glideTime: 0.04, offset: 0.28, attack: 0.001, decay: 0.06, peak: 0.06 },
+    ],
   },
 } as const satisfies Record<string, SoundRecipe>;
 
