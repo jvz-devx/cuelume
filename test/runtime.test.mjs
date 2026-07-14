@@ -16,6 +16,30 @@ function restoreGlobals() {
   originals.clear();
 }
 
+test("play waits for user activation before creating AudioContext", async (context) => {
+  context.after(restoreGlobals);
+  let constructions = 0;
+  const userActivation = { hasBeenActive: false };
+
+  class ThrowingContext {
+    constructor() {
+      constructions++;
+      throw new Error("blocked");
+    }
+  }
+
+  setGlobal("navigator", { userActivation });
+  setGlobal("window", { AudioContext: ThrowingContext });
+  const { play } = await import(`../dist/audio/engine.js?activation=${Date.now()}`);
+
+  play("chime");
+  assert.equal(constructions, 0);
+
+  userActivation.hasBeenActive = true;
+  play("chime");
+  assert.equal(constructions, 1);
+});
+
 test("invalid names and AudioContext failures are silent", async (context) => {
   context.after(restoreGlobals);
   let constructions = 0;
@@ -192,6 +216,8 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
   bind(root);
   bind(root);
   assert.equal(root.listeners.get("pointerenter").length, 1);
+  assert.equal(root.listeners.get("pointerdown").length, 1);
+  assert.equal(root.listeners.get("pointerup").length, 1);
   assert.equal(root.listeners.get("click").length, 1);
 
   const first = new FakeElement(root);
@@ -216,6 +242,13 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
   root.emit("click", later, { pointerType: undefined });
   assert.equal(counts.buffers, 3);
 
+  const touchTarget = new FakeElement(root);
+  touchTarget.setAttribute("data-cuelume-press", "whisper");
+  touchTarget.setAttribute("data-cuelume-release", "whisper");
+  root.emit("pointerdown", touchTarget, { pointerType: "touch" });
+  root.emit("pointerup", touchTarget, { pointerType: "touch" });
+  assert.equal(counts.buffers, 5);
+
   const invalid = new FakeElement(root);
   invalid.setAttribute("data-cuelume-hover", "toString");
   now += 151;
@@ -225,7 +258,7 @@ test("binding is delegated, dynamic, idempotent, and globally throttled", async 
   const child = new FakeElement(later);
   now += 151;
   root.emit("pointerenter", child, { relatedTarget: later });
-  assert.equal(counts.buffers, 3);
+  assert.equal(counts.buffers, 5);
 
 });
 
