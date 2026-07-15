@@ -1,5 +1,5 @@
 /**
- * The sound palette — layer/recipe types plus the ten built-in recipes.
+ * The sound palette — layer/recipe types plus the fourteen built-in recipes.
  * Each sound has its own distinct shape — a chime, an arpeggio, a pitch
  * glide, a warm pad, a breath — rather than being a volume/EQ tweak on
  * the same click. Add a new one here without touching any audio graph code.
@@ -138,6 +138,43 @@ export const RECIPES = {
       { kind: "tone", waveform: "sine", frequency: 1318.51, offset: 0.12, attack: 0.004, decay: 0.18, peak: 0.07 },
     ],
     shimmer: { delay: 0.1, feedback: 0.22, wet: 0.16, lowpass: 4500 },
+  },
+  /** A muted knock followed by two descending tones — a calm, recoverable refusal. */
+  error: {
+    masterGain: 0.42,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 850, filterQ: 1.1, attack: 0.001, decay: 0.035, peak: 0.13 },
+      { kind: "tone", waveform: "triangle", frequency: 440, offset: 0.025, attack: 0.004, decay: 0.09, peak: 0.045 },
+      { kind: "tone", waveform: "triangle", frequency: 349.23, offset: 0.1, attack: 0.004, decay: 0.14, peak: 0.04 },
+    ],
+  },
+  /** A papery filtered flick with a tiny glass tick — for pages, galleries, and carousels. */
+  page: {
+    masterGain: 0.38,
+    layers: [
+      { kind: "noise", filterType: "lowpass", filterFrequency: 1800, filterQ: 0.7, attack: 0.006, decay: 0.08, peak: 0.11 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 4200, filterQ: 1.2, offset: 0.04, attack: 0.004, decay: 0.065, peak: 0.08 },
+      { kind: "tone", waveform: "sine", frequency: 2400, offset: 0.075, attack: 0.002, decay: 0.045, peak: 0.02 },
+    ],
+  },
+  /** A brief unresolved lift — signals that user-initiated work has started. */
+  loading: {
+    masterGain: 0.42,
+    layers: [
+      { kind: "noise", filterType: "lowpass", filterFrequency: 1400, filterQ: 0.6, attack: 0.035, decay: 0.14, peak: 0.035 },
+      { kind: "tone", waveform: "sine", frequency: 420, glideTo: 630, glideTime: 0.18, attack: 0.025, decay: 0.18, peak: 0.05 },
+    ],
+    shimmer: { delay: 0.11, feedback: 0.18, wet: 0.12, lowpass: 2800 },
+  },
+  /** A precise focus tick opening into a soft harmonic bloom — content is ready. */
+  ready: {
+    masterGain: 0.45,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 3200, filterQ: 1.7, attack: 0.001, decay: 0.018, peak: 0.1 },
+      { kind: "tone", waveform: "sine", frequency: 659.25, offset: 0.025, attack: 0.012, decay: 0.2, peak: 0.05 },
+      { kind: "tone", waveform: "sine", frequency: 987.77, offset: 0.025, attack: 0.012, decay: 0.22, peak: 0.035 },
+    ],
+    shimmer: { delay: 0.13, feedback: 0.2, wet: 0.13, lowpass: 3600 },
   },
 } as const satisfies Record<string, SoundRecipe>;
 

@@ -1,6 +1,6 @@
 # Cuelume
 
-Ten carefully designed interaction sounds for the web. Synthesized live with Web Audio, with no audio files and zero runtime dependencies.
+Fourteen carefully designed interaction sounds for the web. Synthesized live with Web Audio, with no audio files and zero runtime dependencies.
 
 Cuelume is a curated sound palette, not an audio engine. It gives buttons, links, toggles, and completed actions clear feedback without asking developers to design sounds themselves. Add an attribute, call `bind()`, done.
 
@@ -77,6 +77,10 @@ Cuelume starts enabled and does not read or write storage.
 | `release` | Brighter springy tick        | Pointer up                       |
 | `toggle`  | Mechanical click-clack       | Switches, tabs                   |
 | `success` | Warm three-note confirmation | After an action succeeds (e.g. copy to clipboard) |
+| `error`   | Soft knock and descending refusal | Recoverable errors          |
+| `page`    | Papery flick with a glass tick | Pages, galleries, carousels    |
+| `loading` | Brief unresolved rising shimmer | User-initiated work starting  |
+| `ready`   | Focus tick with a harmonic bloom | Image or content loaded       |
 
 ## API
 
@@ -88,7 +92,7 @@ import { play, bind, setEnabled, sounds, type SoundName } from "cuelume";
 - **`bind(root?: ParentNode)`** — delegate all `data-cuelume-*` interactions under `root` (defaults to the whole document). Idempotent and handles elements added later.
 - **`setEnabled(enabled: boolean)`** — enable or disable future playback. Does not persist the preference or stop sounds already playing.
 - **`sounds`** — the list of all sound names.
-- **`SoundName`** — union type of the ten sound names.
+- **`SoundName`** — union type of the fourteen sound names.
 
 ## Defaults that behave
 

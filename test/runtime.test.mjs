@@ -16,6 +16,11 @@ function restoreGlobals() {
   originals.clear();
 }
 
+test("expanded palette exposes error, page, loading, and ready", async () => {
+  const { sounds } = await import("../dist/index.js");
+  assert.deepEqual(sounds.slice(-4), ["error", "page", "loading", "ready"]);
+});
+
 test("play waits for user activation before creating AudioContext", async (context) => {
   context.after(restoreGlobals);
   let constructions = 0;
