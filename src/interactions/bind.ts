@@ -3,8 +3,8 @@
  * carrying a `data-cuelume-*` attribute:
  *
  *   data-cuelume-hover    → plays on pointerenter (fine mouse, throttled)
- *   data-cuelume-press    → plays on pointerdown  (mouse-only)
- *   data-cuelume-release  → plays on pointerup    (mouse-only)
+ *   data-cuelume-press    → plays on pointerdown
+ *   data-cuelume-release  → plays on pointerup
  *   data-cuelume-toggle   → plays on click
  *
  * Delegated listeners resolve attributes when each event fires, so later
@@ -26,7 +26,9 @@ function resolve(el: HTMLElement, attr: string, fallback: SoundName): SoundName 
 }
 
 function isMouse(event: PointerEvent): boolean {
-  return event.pointerType === "mouse" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  return (
+    event.pointerType === "mouse" && window.matchMedia("(hover: hover) and (pointer: fine)").matches
+  );
 }
 
 function findTarget(root: ParentNode, event: Event, attr: string): HTMLElement | null {
@@ -76,7 +78,7 @@ export function bind(root?: ParentNode): void {
   boundRoots.add(scope);
 
   listen(scope, "pointerenter", "data-cuelume-hover", "chime", true);
-  listen(scope, "pointerdown", "data-cuelume-press", "press", true);
-  listen(scope, "pointerup", "data-cuelume-release", "release", true);
+  listen(scope, "pointerdown", "data-cuelume-press", "press");
+  listen(scope, "pointerup", "data-cuelume-release", "release");
   listen(scope, "click", "data-cuelume-toggle", "toggle");
 }
