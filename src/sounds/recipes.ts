@@ -267,6 +267,65 @@ export const RECIPES = {
     ],
     shimmer: { delay: 0.13, feedback: 0.2, wet: 0.13, lowpass: 3600 },
   },
+  /** A rounded retro chirp for playful controls and friendly acknowledgements. */
+  boop: {
+    masterGain: 0.4,
+    layers: [
+      { kind: "tone", waveform: "sine", frequency: 330, glideTo: 520, glideTime: 0.07, attack: 0.003, decay: 0.1, peak: 0.09 },
+      { kind: "tone", waveform: "triangle", frequency: 660, glideTo: 1040, glideTime: 0.07, attack: 0.003, decay: 0.075, peak: 0.025 },
+    ],
+  },
+  /** A hollow ping with a distant return — for discovery, presence, and scanning. */
+  sonar: {
+    masterGain: 0.42,
+    layers: [
+      { kind: "tone", waveform: "sine", frequency: 523.25, attack: 0.004, decay: 0.34, peak: 0.075 },
+      { kind: "tone", waveform: "sine", frequency: 1046.5, attack: 0.004, decay: 0.18, peak: 0.018 },
+    ],
+    shimmer: { delay: 0.19, feedback: 0.3, wet: 0.2, lowpass: 2400 },
+  },
+  /** Opposing pitch sweeps crossing through an airy swell — a compact spatial transition. */
+  warp: {
+    masterGain: 0.32,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 1200, filterQ: 0.65, attack: 0.08, decay: 0.2, peak: 0.08 },
+      { kind: "tone", waveform: "sine", frequency: 180, glideTo: 720, glideTime: 0.24, attack: 0.035, decay: 0.22, peak: 0.045 },
+      { kind: "tone", waveform: "triangle", frequency: 960, glideTo: 300, glideTime: 0.24, attack: 0.035, decay: 0.22, peak: 0.025 },
+    ],
+  },
+  /** A mechanical latch opening into a bright fifth — access granted without a fanfare. */
+  unlock: {
+    masterGain: 0.42,
+    layers: [
+      { kind: "noise", filterType: "bandpass", filterFrequency: 1300, filterQ: 1.5, attack: 0.001, decay: 0.025, peak: 0.13 },
+      { kind: "noise", filterType: "bandpass", filterFrequency: 3600, filterQ: 1.8, offset: 0.035, attack: 0.001, decay: 0.018, peak: 0.09 },
+      { kind: "tone", waveform: "sine", frequency: 523.25, offset: 0.055, attack: 0.005, decay: 0.13, peak: 0.045 },
+      { kind: "tone", waveform: "sine", frequency: 783.99, offset: 0.115, attack: 0.005, decay: 0.18, peak: 0.05 },
+    ],
+    shimmer: { delay: 0.1, feedback: 0.16, wet: 0.1, lowpass: 3800 },
+  },
+  /** An inharmonic metal glint with a small bounce — points, loot, and earned moments. */
+  reward: {
+    masterGain: 0.4,
+    layers: [
+      { kind: "noise", filterType: "highpass", filterFrequency: 5200, attack: 0.001, decay: 0.018, peak: 0.06 },
+      { kind: "tone", waveform: "sine", frequency: 880, attack: 0.002, decay: 0.16, peak: 0.045 },
+      { kind: "tone", waveform: "sine", frequency: 2360, attack: 0.002, decay: 0.12, peak: 0.035 },
+      { kind: "tone", waveform: "sine", frequency: 3410, attack: 0.002, decay: 0.09, peak: 0.022 },
+      { kind: "tone", waveform: "sine", frequency: 1320, offset: 0.075, attack: 0.002, decay: 0.18, peak: 0.045 },
+    ],
+    shimmer: { delay: 0.08, feedback: 0.24, wet: 0.14, lowpass: 5200 },
+  },
+  /** Two low rounded pulses for urgency, live presence, and dramatic emphasis. */
+  heartbeat: {
+    masterGain: 0.5,
+    layers: [
+      { kind: "noise", filterType: "lowpass", filterFrequency: 180, filterQ: 0.7, attack: 0.001, decay: 0.07, peak: 0.12 },
+      { kind: "tone", waveform: "sine", frequency: 78, glideTo: 54, glideTime: 0.09, attack: 0.002, decay: 0.1, peak: 0.1 },
+      { kind: "noise", filterType: "lowpass", filterFrequency: 170, filterQ: 0.7, offset: 0.15, attack: 0.001, decay: 0.085, peak: 0.1 },
+      { kind: "tone", waveform: "sine", frequency: 72, glideTo: 50, glideTime: 0.1, offset: 0.15, attack: 0.002, decay: 0.12, peak: 0.085 },
+    ],
+  },
 } as const satisfies Record<string, SoundRecipe>;
 
 export type SoundName = keyof typeof RECIPES;

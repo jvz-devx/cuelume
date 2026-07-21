@@ -91,6 +91,12 @@ Cuelume starts enabled and does not read or write storage.
 | `page`    | Papery flick with a glass tick | Pages, galleries, carousels    |
 | `loading` | Brief unresolved rising shimmer | User-initiated work starting  |
 | `ready`   | Focus tick with a harmonic bloom | Image or content loaded       |
+| `boop`    | Rounded retro chirp          | Playful controls, acknowledgements |
+| `sonar`   | Hollow ping with a distant return | Discovery, presence, scanning |
+| `warp`    | Airy crossing pitch sweep    | Spatial transitions, teleporting |
+| `unlock`  | Latch opening into a bright fifth | Access granted, unlocking  |
+| `reward`  | Metallic glint with a bounce | Points, loot, earned moments    |
+| `heartbeat` | Low rounded double pulse    | Urgency, presence, emphasis     |
 
 ## API
 
@@ -102,7 +108,7 @@ import { play, bind, setEnabled, sounds, type SoundName } from "cuelume";
 - **`bind(root?: ParentNode)`** — delegate all `data-cuelume-*` interactions under `root` (defaults to the whole document). Idempotent and handles elements added later.
 - **`setEnabled(enabled: boolean)`** — enable or disable future playback. Does not persist the preference or stop sounds already playing.
 - **`sounds`** — the list of all sound names.
-- **`SoundName`** — union type of the twenty-four sound names.
+- **`SoundName`** — union type of the thirty sound names.
 
 ## Defaults that behave
 

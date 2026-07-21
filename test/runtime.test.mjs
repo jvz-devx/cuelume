@@ -24,6 +24,7 @@ test("exports the complete sound palette", async () => {
     "card", "draw", "deal", "shuffle", "victory",
     "knock",
     "page", "loading", "ready",
+    "boop", "sonar", "warp", "unlock", "reward", "heartbeat",
   ]);
 });
 
